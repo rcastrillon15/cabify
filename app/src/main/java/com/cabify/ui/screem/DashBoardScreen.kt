@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import com.cabify.domain.models.ProductModel
 import com.cabify.ui.theme.CabifyTheme
 import com.cabify.viewmodel.ProductViewModel
 
@@ -37,4 +38,9 @@ fun DashBoardScreen(onNavigate: () -> Unit, viewModel: ProductViewModel) {
             }
         }
     }
+}
+
+@Composable
+fun ItemCardProduct(movie: ProductModel, onClick: (code: Int) -> Unit){
+
 }
