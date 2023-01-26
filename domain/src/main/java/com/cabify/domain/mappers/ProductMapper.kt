@@ -7,17 +7,20 @@ import com.cabify.domain.models.ProductModel
 fun ProductFieldsResponse.toProductEntity() = ProductEntity(
     code = code,
     name = name,
-    price = price
+    price = price,
+    imageUrl = imageUrl
 )
 
 fun ProductFieldsResponse.toProductModel() = ProductModel(
     code = code,
     name = name,
-    price = price
+    price = price,
+    imageUrl = imageUrl
 )
 
 fun ProductEntity.toProductModel() = ProductModel(
     code = code,
     name = name,
-    price = price
+    price = price,
+    imageUrl = imageUrl
 )

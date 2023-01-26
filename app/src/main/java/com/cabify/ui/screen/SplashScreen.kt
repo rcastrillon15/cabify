@@ -1,4 +1,4 @@
-package com.cabify.ui.screem
+package com.cabify.ui.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.cabify.R
+import com.cabify.ui.theme.Purple500
 import kotlinx.coroutines.delay
 
 @Composable
@@ -33,7 +34,7 @@ fun SplashScreen(navigate: () -> Unit) {
 @Composable
 fun Splash() {
 
-    val gradientBackground = Brush.verticalGradient(listOf(Color.Black, Color.White))
+    val gradientBackground = Brush.verticalGradient(listOf(Purple500, Color.White))
 
     Column(
         modifier = Modifier

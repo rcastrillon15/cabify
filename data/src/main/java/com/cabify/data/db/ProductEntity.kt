@@ -13,5 +13,7 @@ data class ProductEntity(
     @ColumnInfo(name = "name")
     val name: String,
     @ColumnInfo(name = "price")
-    val price: Double
+    val price: Double,
+    @ColumnInfo(name = "imageUrl")
+    val imageUrl: String
 )

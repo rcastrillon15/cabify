@@ -1,7 +1,9 @@
 package com.cabify.domain.repositories
 
+import com.cabify.common.Constants
 import com.cabify.common.DomainErrorFactory
 import com.cabify.common.Either
+import com.cabify.common.ProductType
 import com.cabify.common.framework.NetworkMonitor
 import com.cabify.data.source.local.ProductLocalDataSourceImpl
 import com.cabify.data.source.remote.ProductRemoteDataSourceImpl
@@ -18,6 +20,20 @@ class ProductRepositoryImpl @Inject constructor(
         if (NetworkMonitor().isConnected()) {
             return when (val response = remoteDataSource.getProduct()) {
                 is Either.Right -> {
+
+                    response.r.products.forEach {
+                        when (it.code) {
+                            ProductType.VOUCHER.code -> it.apply {
+                                imageUrl = Constants.IMAGE_VOUCHER
+                            }
+                            ProductType.TSHIRT.code -> it.apply {
+                                imageUrl = Constants.IMAGE_TSHIRT
+                            }
+                            ProductType.MUG.code -> it.apply { imageUrl = Constants.IMAGE_MUG }
+                            else -> it.apply { it.apply { imageUrl = Constants.IMAGE_DEFAULT } }
+                        }
+                    }
+
                     localDataSource.insert(response.r.products.map { it.toProductEntity() })
                     Either.Right(response.r.products.map { it.toProductModel() })
                 }

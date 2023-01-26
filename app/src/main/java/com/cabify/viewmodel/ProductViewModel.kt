@@ -6,7 +6,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cabify.common.Constants.IMAGE_DEFAULT
+import com.cabify.common.Constants.IMAGE_MUG
+import com.cabify.common.Constants.IMAGE_TSHIRT
+import com.cabify.common.Constants.IMAGE_VOUCHER
 import com.cabify.common.LoadingViewState
+import com.cabify.common.ProductType
 import com.cabify.domain.models.ProductModel
 import com.cabify.domain.usecases.ProductUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel

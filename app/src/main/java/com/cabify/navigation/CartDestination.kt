@@ -1,9 +1,8 @@
 package com.cabify.navigation
 
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.cabify.ui.screem.CartScreen
+import com.cabify.ui.screen.CartScreen
 
 object CartDestination : NavigationDestination {
     override val route = "cart_route"
@@ -12,8 +11,6 @@ object CartDestination : NavigationDestination {
 
 fun NavGraphBuilder.cartGraph(onBack: () -> Unit) {
     composable(route = CartDestination.route) {
-        CartScreen(
-            viewModel = hiltViewModel(),
-            onBack = onBack)
+        CartScreen(onBack = onBack)
     }
 }
