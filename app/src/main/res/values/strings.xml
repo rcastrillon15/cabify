@@ -3,4 +3,11 @@
     <string name="price">Only for %1$s</string>
     <string name="shopping_cart">Shopping cart</string>
     <string name="back">Back</string>
+    <string name="add_to_cart">Add to cart</string>
+    <string name="stock">Stock: %1$s</string>
+    <string name="discount">Discount: %1$s</string>
+    <string name="total_without_discount">Total without discount %1$s</string>
+    <string name="total_with_discount">Total to pay: %1$s</string>
+    <string name="available_stock">Available in stock</string>
+    <string name="about">About</string>
 </resources>

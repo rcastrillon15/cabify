@@ -8,5 +8,8 @@ data class ProductFieldsResponse(
     val code: String,
     val name: String,
     val price: Double,
-    var imageUrl: String
+    var imageUrl: String,
+    var description:String,
+    var ratingBar:Double,
+    var stock:Int
 )

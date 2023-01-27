@@ -8,19 +8,28 @@ fun ProductFieldsResponse.toProductEntity() = ProductEntity(
     code = code,
     name = name,
     price = price,
-    imageUrl = imageUrl
+    imageUrl = imageUrl,
+    description = description,
+    ratingBar = ratingBar,
+    stock = stock
 )
 
 fun ProductFieldsResponse.toProductModel() = ProductModel(
     code = code,
     name = name,
     price = price,
-    imageUrl = imageUrl
+    imageUrl = imageUrl,
+    description = description,
+    ratingBar = ratingBar,
+    stock = stock
 )
 
 fun ProductEntity.toProductModel() = ProductModel(
     code = code,
     name = name,
     price = price,
-    imageUrl = imageUrl
+    imageUrl = imageUrl,
+    description = description,
+    ratingBar = ratingBar,
+    stock = stock
 )

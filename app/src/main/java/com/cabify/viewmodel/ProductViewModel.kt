@@ -33,6 +33,11 @@ class ProductViewModel @Inject constructor(
     private val _productState = MutableStateFlow(LoadingViewState<List<ProductModel>>(emptyList()))
     val productState = _productState.asStateFlow()
 
+    private val _selectedProductsState = MutableStateFlow(listOf(ProductModel()))
+    val selectedProductsState = _selectedProductsState.asStateFlow()
+
+    var countAddedProducts = mutableStateOf(0)
+
     init {
         getProduct()
     }
@@ -48,5 +53,35 @@ class ProductViewModel @Inject constructor(
                 })
             _productState.update { newState }
         }
+    }
+
+    fun addProduct(product: ProductModel) {
+
+        _selectedProductsState.update {
+            it.toMutableList().apply {
+                add(product)
+            }
+        }
+        countAddedProducts.value = _selectedProductsState.value.count()
+    }
+
+    fun deleteProduct(product: ProductModel) {
+
+        _selectedProductsState.update {
+            it.toMutableList().apply {
+                this.forEachIndexed { index, value ->
+                    if (value.code == product.code) {
+                        removeAt(index)
+                        return
+                    }
+                }
+            }
+        }
+
+        countAddedProducts.value = _selectedProductsState.value.count()
+    }
+
+    fun checkout(){
+
     }
 }
