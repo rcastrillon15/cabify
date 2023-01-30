@@ -3,11 +3,12 @@ package com.cabify.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cabify.common.LoadState
 import com.cabify.common.LoadingViewState
 import com.cabify.domain.models.ProductModel
+import com.cabify.domain.models.ProductPayModel
 import com.cabify.domain.usecases.ProductUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -28,9 +29,14 @@ class ProductViewModel @Inject constructor(
     private val _productState = MutableStateFlow(LoadingViewState<List<ProductModel>>(emptyList()))
     val productState = _productState.asStateFlow()
 
+    private val _productPayState = MutableStateFlow<LoadState<Boolean>>(LoadState.InFlight)
+    val productPayState = _productPayState.asStateFlow()
+
     var countAddedProducts = mutableStateOf(0)
 
     var showMessage = mutableStateOf(false)
+
+    var totalToPay = mutableStateOf(0.0)
 
     init {
         getProduct()
@@ -64,6 +70,7 @@ class ProductViewModel @Inject constructor(
             }
         }
         countProducts()
+        total()
     }
 
     fun deleteProduct(product: ProductModel) {
@@ -76,13 +83,28 @@ class ProductViewModel @Inject constructor(
             }
         }
         countProducts()
+        total()
     }
 
     private fun countProducts() {
         countAddedProducts.value = _productState.value.data.sumOf { it.itemAdded.value }
     }
 
-    fun checkout() {
+    private fun total() {
 
+        totalToPay.value = _productState.value.data.sumOf { it.price }
+    }
+
+    fun checkout() {
+        _productPayState.update { LoadState.IsLoading(true) }
+        viewModelScope.launch {
+            useCase.pay(listOf(ProductPayModel(code = "MUG")))
+                .fold({
+                    stateErrorMessage = it.toString()
+                    _productPayState.update { LoadState.Failure }
+                }, { value ->
+                    _productPayState.update { LoadState.Success(value) }
+                })
+        }
     }
 }

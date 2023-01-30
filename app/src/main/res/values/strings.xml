@@ -13,4 +13,6 @@
     <string name="no_stock">The product is out of stock</string>
     <string name="empty_cart">You have no items in your cart</string>
     <string name="see_products">See the list of products</string>
+    <string name="successful_payment">Successful payment</string>
+    <string name="bank_name">BBVA BANK</string>
 </resources>

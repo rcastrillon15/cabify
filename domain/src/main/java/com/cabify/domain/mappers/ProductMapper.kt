@@ -1,8 +1,10 @@
 package com.cabify.domain.mappers
 
 import com.cabify.data.db.ProductEntity
+import com.cabify.data.request.product.ProductPayRequest
 import com.cabify.data.response.product.ProductFieldsResponse
 import com.cabify.domain.models.ProductModel
+import com.cabify.domain.models.ProductPayModel
 
 fun ProductFieldsResponse.toProductEntity() = ProductEntity(
     code = code,
@@ -32,4 +34,8 @@ fun ProductEntity.toProductModel() = ProductModel(
     description = description,
     ratingBar = ratingBar,
     stock = stock
+)
+
+fun ProductPayModel.toProductPayRequest() = ProductPayRequest(
+    code = code
 )

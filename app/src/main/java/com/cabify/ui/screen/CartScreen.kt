@@ -1,6 +1,7 @@
 package com.cabify.ui.screen
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,23 +15,37 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FabPosition
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,14 +55,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.cabify.R
+import com.cabify.common.LoadState
 import com.cabify.common.toEuro
 import com.cabify.components.BackArrow
+import com.cabify.components.CreditCard
+import com.cabify.components.LinearProgressBarCustom
+import com.cabify.components.LoadErrorScreen
 import com.cabify.domain.models.ProductModel
 import com.cabify.ui.theme.Gray_FFF8F8F8
 import com.cabify.ui.theme.Purple700
@@ -58,125 +79,273 @@ import com.cabify.ui.theme.small
 import com.cabify.ui.theme.xsmall
 import com.cabify.ui.theme.xxlarge
 import com.cabify.viewmodel.ProductViewModel
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CartScreen(
-    viewModel: ProductViewModel,
-    onBack: () -> Unit
+    onNavigate: () -> Unit,
+    onBack: () -> Unit,
+    viewModel: ProductViewModel
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val productState by viewModel.productState.collectAsState()
+    val productPayState by viewModel.productPayState.collectAsState()
+    val bottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                backgroundColor = Color.White,
-                contentColor = Purple700,
-                title = { Text(stringResource(R.string.shopping_cart)) },
-                navigationIcon = { BackArrow(onBack) },
-            )
-        },
-        floatingActionButton = {
-            Button(
-                enabled = viewModel.countAddedProducts.value != 0,
+    var cardNumber by remember { mutableStateOf("8547 9658 6325 4521") }
+    var cardHolder by remember { mutableStateOf("RODRIGO CASTRILLON") }
+    var cardExpiration by remember { mutableStateOf("02/25") }
+    var cardCVV by remember { mutableStateOf("123") }
+
+    BackHandler(bottomSheetState.isVisible) {
+        scope.launch {
+            bottomSheetState.hide()
+        }
+    }
+
+    ModalBottomSheetLayout(
+        sheetState = bottomSheetState,
+        sheetContent = {
+            Column(
                 modifier = Modifier
+                    .padding(medium)
                     .fillMaxWidth()
-                    .padding(horizontal = normal),
-                onClick = viewModel::checkout,
-                colors = ButtonDefaults.buttonColors(backgroundColor = Purple700),
-                shape = RoundedCornerShape(28.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalArrangement = Arrangement.SpaceBetween,
-                    horizontalAlignment = Alignment.CenterHorizontally
+
+                IconButton(
+                    onClick = { scope.launch { bottomSheetState.hide() } },
+                    modifier = Modifier.padding(vertical = xsmall, horizontal = small)
                 ) {
-                    Text(
-                        text = stringResource(id = R.string.total_without_discount, "12500€"),
-                        style = MaterialTheme.typography.caption.copy(
-                            textAlign = TextAlign.Center,
-                            color = Color.Gray,
-                            fontWeight = FontWeight.SemiBold,
-                            textDecoration = TextDecoration.LineThrough
-                        )
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = Purple700
                     )
+                }
+
+                CreditCard(
+                    cardNumber = cardNumber,
+                    cardHolder = cardHolder,
+                    cardExpiration = cardExpiration
+                )
+
+                TextField(
+                    value = cardNumber,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    onValueChange = {
+                        if (it.length <= 19) cardNumber = it
+                    },
+                    label = { Text("Card number") },
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Color.White
+                    )
+                )
+
+                TextField(
+                    value = cardHolder.uppercase(),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    onValueChange = {
+                        if (it.length <= 25) cardHolder = it
+                    },
+                    label = { Text("Card holder") },
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Color.White
+                    ),
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters)
+                )
+
+                TextField(
+                    value = cardExpiration,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    onValueChange = {
+                        if (it.length <= 5) cardExpiration = it
+                    },
+                    label = { Text("Card expiration") },
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Color.White
+                    )
+                )
+
+                TextField(
+                    value = cardCVV,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    onValueChange = {
+                        if (it.length <= 3) cardCVV = it
+                    },
+                    label = { Text("Card cvv") },
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Color.White
+                    )
+                )
+
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = medium),
+                    onClick = viewModel::checkout,
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Purple700),
+                    shape = RoundedCornerShape(28.dp)
+                ) {
 
                     Text(
-                        text = stringResource(id = R.string.total_with_discount, "10500€"),
+                        text = stringResource(
+                            id = R.string.total_with_discount,
+                            viewModel.totalToPay.value.toEuro()
+                        ),
                         style = MaterialTheme.typography.subtitle2.copy(
                             textAlign = TextAlign.Center,
                             color = Color.White,
                             fontWeight = FontWeight.ExtraBold
-                        )
+                        ),
+                        modifier = Modifier.padding(vertical = normal)
                     )
                 }
             }
-        },
-        floatingActionButtonPosition = FabPosition.Center
-    ) { paddingValues ->
-        Column(Modifier.padding(paddingValues)) {
-            if (viewModel.countAddedProducts.value != 0) {
-                LazyColumn(
+        }) {
+
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    backgroundColor = Color.White,
+                    contentColor = Purple700,
+                    title = { Text(stringResource(R.string.shopping_cart)) },
+                    navigationIcon = { BackArrow(onBack) },
+                )
+            },
+            floatingActionButton = {
+                Button(
+                    enabled = viewModel.countAddedProducts.value != 0,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = xxlarge),
-                    state = rememberLazyListState()
-                ) {
-                    itemsIndexed(productState.data) { _, product ->
-                        if (product.itemAdded.value != 0) {
-                            ItemAddedProduct(
-                                product = product,
-                                onAdd = {
-                                    viewModel.addProduct(it)
-                                }, onDelete = {
-                                    viewModel.deleteProduct(it)
-                                })
+                        .padding(horizontal = normal),
+                    onClick = {
+                        scope.launch {
+                            bottomSheetState.animateTo(ModalBottomSheetValue.Expanded)
                         }
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Purple700),
+                    shape = RoundedCornerShape(28.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        verticalArrangement = Arrangement.SpaceBetween,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = stringResource(
+                                id = R.string.total_without_discount,
+                                viewModel.totalToPay.value.toEuro()
+                            ),
+                            style = MaterialTheme.typography.caption.copy(
+                                textAlign = TextAlign.Center,
+                                color = Color.Gray,
+                                fontWeight = FontWeight.SemiBold,
+                                textDecoration = TextDecoration.LineThrough
+                            )
+                        )
+
+                        Text(
+                            text = stringResource(
+                                id = R.string.total_with_discount,
+                                viewModel.totalToPay.value.toEuro()
+                            ),
+                            style = MaterialTheme.typography.subtitle2.copy(
+                                textAlign = TextAlign.Center,
+                                color = Color.White,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        )
                     }
                 }
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.empty_cart),
+            },
+            floatingActionButtonPosition = FabPosition.Center
+        ) { paddingValues ->
+            Column(Modifier.padding(paddingValues)) {
+                if (viewModel.countAddedProducts.value != 0) {
+                    LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(normal),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.h5.copy(
-                            color = Color.Black,
-                            fontWeight = FontWeight.Light,
-                            textAlign = TextAlign.Center
+                            .padding(bottom = xxlarge),
+                        state = rememberLazyListState()
+                    ) {
+                        itemsIndexed(productState.data) { _, product ->
+                            if (product.itemAdded.value != 0) {
+                                ItemAddedProduct(
+                                    product = product,
+                                    onAdd = {
+                                        viewModel.addProduct(it)
+                                    }, onDelete = {
+                                        viewModel.deleteProduct(it)
+                                    })
+                            }
+                        }
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.empty_cart),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(normal),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.h5.copy(
+                                color = Color.Black,
+                                fontWeight = FontWeight.Light,
+                                textAlign = TextAlign.Center
+                            )
                         )
-                    )
 
-                    ClickableText(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(normal),
-                        text = buildAnnotatedString { append(stringResource(id = R.string.see_products)) },
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.h6.copy(
-                            color = Purple700,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
-                        ),
-                        onClick = { onBack() }
-                    )
+                        ClickableText(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(normal),
+                            text = buildAnnotatedString { append(stringResource(id = R.string.see_products)) },
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.h6.copy(
+                                color = Purple700,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            ),
+                            onClick = { onBack() }
+                        )
+                    }
                 }
             }
-        }
 
-        if (viewModel.showMessage.value) {
-            Toast.makeText(context, stringResource(id = R.string.no_stock), Toast.LENGTH_LONG)
-                .show()
-            viewModel.showMessage.value = false
+            if (viewModel.showMessage.value) {
+                Toast.makeText(context, stringResource(id = R.string.no_stock), Toast.LENGTH_LONG)
+                    .show()
+                viewModel.showMessage.value = false
+            }
+
+            when (productPayState) {
+                is LoadState.Failure -> LoadErrorScreen(viewModel.stateErrorMessage)
+                is LoadState.IsLoading -> LinearProgressBarCustom()
+                is LoadState.Success -> {
+
+                    //onNavigate()
+                }
+                else -> {
+
+                }
+            }
         }
     }
 }

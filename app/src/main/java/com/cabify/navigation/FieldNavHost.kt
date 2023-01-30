@@ -11,15 +11,16 @@ fun FieldNavHost(
     startDestination: String = SplashDestination.route
 ) {
 
-    val popBackStack: () -> Unit = {
-        navController.popBackStack()
-    }
-
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
         splashGraph(navController = navController)
-        cartGraph(navController = navController, onBack = popBackStack)
+        cartGraph(navController = navController, onBack = {
+            navController.popBackStack(ShoppingDestination.route, false)
+        })
+        shoppingGraph(navController = navController, onBack = {
+            navController.popBackStack(DashBoardDestination.route, false)
+        })
     }
 }
