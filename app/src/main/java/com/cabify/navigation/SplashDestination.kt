@@ -4,8 +4,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.cabify.ui.screem.DashBoardScreen
-import com.cabify.ui.screem.SplashScreen
+import com.cabify.ui.screen.DashBoardScreen
+import com.cabify.ui.screen.SplashScreen
 
 object SplashDestination : NavigationDestination {
     override val route: String = "splash_route"

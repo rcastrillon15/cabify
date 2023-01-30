@@ -10,15 +10,15 @@ import com.cabify.common.LoadingViewState
 import com.cabify.domain.models.ProductModel
 import com.cabify.domain.usecases.ProductUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class ProductViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    //savedStateHandle: SavedStateHandle,
     private val useCase: ProductUseCase
 ) : ViewModel() {
 
@@ -27,6 +27,10 @@ class ProductViewModel @Inject constructor(
 
     private val _productState = MutableStateFlow(LoadingViewState<List<ProductModel>>(emptyList()))
     val productState = _productState.asStateFlow()
+
+    var countAddedProducts = mutableStateOf(0)
+
+    var showMessage = mutableStateOf(false)
 
     init {
         getProduct()
@@ -43,5 +47,42 @@ class ProductViewModel @Inject constructor(
                 })
             _productState.update { newState }
         }
+    }
+
+    fun addProduct(product: ProductModel) {
+        _productState.update {
+            it.apply {
+                this.data.apply {
+                    this.single { value -> value.code == product.code }.apply {
+                        if (itemAdded.value < stock) {
+                            itemAdded.value += 1
+                        } else {
+                            showMessage.value = true
+                        }
+                    }
+                }
+            }
+        }
+        countProducts()
+    }
+
+    fun deleteProduct(product: ProductModel) {
+        _productState.update {
+            it.apply {
+                this.data.apply {
+                    this.single { value -> value.code == product.code }
+                        .apply { itemAdded.value -= 1 }
+                }
+            }
+        }
+        countProducts()
+    }
+
+    private fun countProducts() {
+        countAddedProducts.value = _productState.value.data.sumOf { it.itemAdded.value }
+    }
+
+    fun checkout() {
+
     }
 }

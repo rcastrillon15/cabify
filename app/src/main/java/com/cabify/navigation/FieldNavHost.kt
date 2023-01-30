@@ -20,6 +20,6 @@ fun FieldNavHost(
         startDestination = startDestination
     ) {
         splashGraph(navController = navController)
-        cartGraph(onBack = popBackStack)
+        cartGraph(navController = navController, onBack = popBackStack)
     }
 }
