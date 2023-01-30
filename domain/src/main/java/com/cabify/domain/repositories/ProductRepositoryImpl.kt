@@ -53,7 +53,7 @@ class ProductRepositoryImpl @Inject constructor(
                 ProductType.VOUCHER.code -> it.apply {
                     imageUrl = Constants.IMAGE_VOUCHER
                     description = VOUCHER_DESCRIPTION
-                    stock = 50
+                    stock = 15
                     ratingBar = 5.0
                 }
                 ProductType.TSHIRT.code -> it.apply {
@@ -65,7 +65,7 @@ class ProductRepositoryImpl @Inject constructor(
                 ProductType.MUG.code -> it.apply {
                     imageUrl = Constants.IMAGE_MUG
                     description = MUG_DESCRIPTION
-                    stock = 40
+                    stock = 10
                     ratingBar = 5.0
                 }
                 else -> it.apply {

@@ -1,5 +1,6 @@
 package com.cabify.ui.screen
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -47,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -58,6 +60,8 @@ import com.cabify.R
 import com.cabify.common.Constants.IMAGE_DEFAULT
 import com.cabify.common.Constants.TSHIRT_DESCRIPTION
 import com.cabify.common.toEuro
+import com.cabify.components.LinearProgressBarCustom
+import com.cabify.components.LoadErrorScreen
 import com.cabify.components.RatingBar
 import com.cabify.domain.models.ProductModel
 import com.cabify.ui.theme.Gray_FFF8F8F8
@@ -73,6 +77,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun DashBoardScreen(onNavigate: () -> Unit, viewModel: ProductViewModel) {
+
+    val context = LocalContext.current
     val productState by viewModel.productState.collectAsState()
     val bottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -103,8 +109,8 @@ fun DashBoardScreen(onNavigate: () -> Unit, viewModel: ProductViewModel) {
                     title = { Text(text = stringResource(R.string.app_name)) },
                     actions = {
                         Button(
+                            enabled = viewModel.countAddedProducts.value != 0,
                             onClick = {
-                                //viewModel.deleteProduct(productSelected)
                                 onNavigate()
                             },
                             colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
@@ -129,18 +135,37 @@ fun DashBoardScreen(onNavigate: () -> Unit, viewModel: ProductViewModel) {
                 )
             }
         ) { paddingValues ->
-            Column(Modifier.padding(paddingValues)) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    state = rememberLazyListState()
-                ) {
-                    itemsIndexed(productState.data) { _, product ->
-                        ItemCardProduct(product = product, onClick = {
-                            productSelected = it
-                            scope.launch {
-                                bottomSheetState.animateTo(ModalBottomSheetValue.Expanded)
+            when {
+                productState.isLoading -> {
+                    LinearProgressBarCustom()
+                }
+                productState.failed -> {
+                    LoadErrorScreen(viewModel.stateErrorMessage)
+                }
+                else -> {
+                    Column(Modifier.padding(paddingValues)) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth(),
+                            state = rememberLazyListState()
+                        ) {
+                            itemsIndexed(productState.data) { _, product ->
+                                ItemCardProduct(product = product, onClick = {
+                                    productSelected = it
+                                    scope.launch {
+                                        bottomSheetState.animateTo(ModalBottomSheetValue.Expanded)
+                                    }
+                                })
                             }
-                        })
+                        }
+                    }
+
+                    if (viewModel.showMessage.value) {
+                        Toast.makeText(
+                            context,
+                            stringResource(id = R.string.no_stock),
+                            Toast.LENGTH_LONG
+                        ).show()
+                        viewModel.showMessage.value = false
                     }
                 }
             }
@@ -241,7 +266,10 @@ fun ItemCardProduct(product: ProductModel, onClick: (selectedProduct: ProductMod
                     )
 
                     Text(
-                        text = stringResource(id = R.string.stock, product.stock),
+                        text = stringResource(
+                            id = R.string.stock,
+                            product.stock - product.itemAdded.value
+                        ),
                         modifier = Modifier
                             .padding(horizontal = normal, vertical = medium)
                             .align(Alignment.End),
@@ -251,7 +279,6 @@ fun ItemCardProduct(product: ProductModel, onClick: (selectedProduct: ProductMod
                         )
                     )
                 }
-
             }
         }
     }
@@ -322,7 +349,10 @@ fun DetailProduct(
             )
 
             Text(
-                text = stringResource(id = R.string.available_stock),
+                text = stringResource(
+                    id = R.string.available_stock,
+                    product.stock - product.itemAdded.value
+                ),
                 modifier = Modifier.padding(horizontal = normal),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
