@@ -8,6 +8,9 @@ import com.cabify.data.response.product.ProductResponse
 import javax.inject.Inject
 import kotlinx.coroutines.delay
 
+/**
+ * Test class [ProductRemoteDataSourceImplTest]
+ */
 class ProductRemoteDataSourceImpl @Inject constructor(private val service: IProductService) :
     ProductRemoteDataSource {
     override suspend fun getProduct(): Either<DomainErrorFactory, ProductResponse> =
