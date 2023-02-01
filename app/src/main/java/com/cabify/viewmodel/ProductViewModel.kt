@@ -39,7 +39,6 @@ class ProductViewModel @Inject constructor(
     var showMessage = mutableStateOf(false)
 
     var totalToPay = mutableStateOf(0.0)
-    var totalWithoutDiscount = mutableStateOf(0.0)
 
     init {
         getProduct()
@@ -67,10 +66,7 @@ class ProductViewModel @Inject constructor(
                             when (product.code) {
                                 ProductType.VOUCHER.code -> {
                                     when {
-                                        product.itemAdded.value % 2 == 0 -> {
-                                            totalToPay.value += ((product.itemAdded.value % 2))
-                                            totalWithoutDiscount.value = product.itemAdded.value * product.price
-                                        }
+                                        product.itemAdded.value % 2 == 0 -> totalToPay.value += ((product.itemAdded.value % 2))
                                         else -> {
                                             when {
                                                 product.itemAdded.value / 2 != 0 -> totalToPay.value += (product.itemAdded.value % 2) * product.price
@@ -87,7 +83,6 @@ class ProductViewModel @Inject constructor(
                                                 3 -> totalToPay.value += (product.price - product.itemAdded.value)
                                                 else -> totalToPay.value += (product.price - 1)
                                             }
-                                            totalWithoutDiscount.value = product.itemAdded.value * product.price
                                         }
                                         else -> totalToPay.value += product.price
                                     }
@@ -116,7 +111,6 @@ class ProductViewModel @Inject constructor(
                                             else ->
                                                 totalToPay.value -= product.price
                                         }
-                                        totalWithoutDiscount.value = product.itemAdded.value * product.price
                                     }
 
                                     product.itemAdded.value == 1 -> totalToPay.value -= product.price
@@ -137,7 +131,6 @@ class ProductViewModel @Inject constructor(
                                         totalToPay.value - (product.price) + (product.itemAdded.value) + 1
                                     else -> totalToPay.value -= product.price
                                 }
-                                totalWithoutDiscount.value = product.itemAdded.value * product.price
                             }
 
                             ProductType.MUG.code -> totalToPay.value -= product.price
