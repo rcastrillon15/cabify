@@ -52,7 +52,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
@@ -144,18 +143,6 @@ fun CartScreen(
                     ) {
                         Text(
                             text = stringResource(
-                                id = R.string.total_without_discount,
-                                viewModel.totalWithoutDiscount.value.toEuro()
-                            ),
-                            style = MaterialTheme.typography.caption.copy(
-                                textAlign = TextAlign.Center,
-                                color = Color.Gray,
-                                fontWeight = FontWeight.SemiBold,
-                                textDecoration = TextDecoration.LineThrough
-                            )
-                        )
-                        Text(
-                            text = stringResource(
                                 id = R.string.go_to_pay,
                                 viewModel.totalToPay.value.toEuro()
                             ),
@@ -163,7 +150,8 @@ fun CartScreen(
                                 textAlign = TextAlign.Center,
                                 color = Color.White,
                                 fontWeight = FontWeight.ExtraBold
-                            )
+                            ),
+                            modifier = Modifier.padding(vertical = normal)
                         )
                     }
                 }
