@@ -1,5 +1,11 @@
 package com.cabify.common
 
+sealed class LoadState {
+    object Error : LoadState()
+    object Success : LoadState()
+    object Loading : LoadState()
+}
+
 data class LoadingViewState<T>(
     val data: T,
     val loadType: LoadType = LoadType.Load,

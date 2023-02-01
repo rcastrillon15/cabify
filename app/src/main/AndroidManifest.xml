@@ -18,8 +18,11 @@
         tools:targetApi="31">
         <activity
             android:name="com.cabify.ui.MainActivity"
+            android:screenOrientation="portrait"
             android:exported="true"
-            android:theme="@style/Theme.Cabify">
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.Cabify"
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

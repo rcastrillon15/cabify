@@ -1,6 +1,5 @@
 package com.cabify.components
 
-import android.graphics.drawable.Drawable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons

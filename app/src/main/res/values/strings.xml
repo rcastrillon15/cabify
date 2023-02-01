@@ -7,10 +7,15 @@
     <string name="stock">Stock: %1$s</string>
     <string name="discount">Discount: %1$s</string>
     <string name="total_without_discount">Total without discount %1$s</string>
-    <string name="total_with_discount">Total to pay: %1$s</string>
+    <string name="go_to_pay">Go to pay %1$s</string>
     <string name="available_stock">Available in stock %1$s</string>
     <string name="about">About</string>
     <string name="no_stock">The product is out of stock</string>
     <string name="empty_cart">You have no items in your cart</string>
     <string name="see_products">See the list of products</string>
+    <string name="successful_payment">Successful payment</string>
+    <string name="bank_name">BBVA BANK</string>
+    <string name="my_shopping">My shopping</string>
+    <string name="continue_shopping">Continue shopping</string>
+    <string name="pay">Pay</string>
 </resources>

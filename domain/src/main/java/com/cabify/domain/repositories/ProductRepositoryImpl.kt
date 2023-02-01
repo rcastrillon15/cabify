@@ -13,7 +13,9 @@ import com.cabify.data.source.local.ProductLocalDataSourceImpl
 import com.cabify.data.source.remote.ProductRemoteDataSourceImpl
 import com.cabify.domain.mappers.toProductEntity
 import com.cabify.domain.mappers.toProductModel
+import com.cabify.domain.mappers.toProductPayRequest
 import com.cabify.domain.models.ProductModel
+import com.cabify.domain.models.ProductPayModel
 import javax.inject.Inject
 
 class ProductRepositoryImpl @Inject constructor(
@@ -44,6 +46,21 @@ class ProductRepositoryImpl @Inject constructor(
                     Either.Left(response.l)
                 }
             }
+        }
+    }
+
+    override suspend fun pay(products: List<ProductPayModel>): Either<DomainErrorFactory, Boolean> {
+        return if (NetworkMonitor().isConnected()) {
+            when (val response = remoteDataSource.pay(products.map { it.toProductPayRequest() })) {
+                is Either.Right -> {
+                    Either.Right(response.r)
+                }
+                is Either.Left -> {
+                    Either.Left(response.l)
+                }
+            }
+        } else {
+            Either.Right(false)
         }
     }
 

@@ -6,26 +6,24 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.cabify.ui.screen.CartScreen
+import com.cabify.ui.screen.ShoppingScreen
 import com.cabify.viewmodel.ProductViewModel
 
-object CartDestination : NavigationDestination {
-    override val route = "cart_route"
-    override val destination = "cart_destination"
+object ShoppingDestination : NavigationDestination {
+    override val route = "shopping_route"
+    override val destination = "shopping_destination"
 }
 
 @SuppressLint("UnrememberedGetBackStackEntry")
-fun NavGraphBuilder.cartGraph(navController: NavController, onBack: () -> Unit) {
-    composable(route = CartDestination.route) {
+fun NavGraphBuilder.shoppingGraph(navController: NavController, onBack: () -> Unit) {
+    composable(route = ShoppingDestination.route) {
 
         val viewModel: ProductViewModel =
             hiltViewModel(remember { navController.getBackStackEntry(DashBoardDestination.route) })
 
-        CartScreen(
-            onNavigate = {
-                navController.navigate(ShoppingDestination.route)
-            },
-            onBack = onBack, viewModel = viewModel
+        ShoppingScreen(
+            onBack = onBack,
+            viewModel = viewModel
         )
     }
 }

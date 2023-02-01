@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
@@ -30,7 +32,6 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -53,12 +54,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.cabify.R
-import com.cabify.common.Constants.IMAGE_DEFAULT
-import com.cabify.common.Constants.TSHIRT_DESCRIPTION
 import com.cabify.common.toEuro
 import com.cabify.components.LinearProgressBarCustom
 import com.cabify.components.LoadErrorScreen
@@ -74,7 +72,7 @@ import com.cabify.ui.theme.xsmall
 import com.cabify.viewmodel.ProductViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+@ExperimentalMaterialApi
 @Composable
 fun DashBoardScreen(onNavigate: () -> Unit, viewModel: ProductViewModel) {
 
@@ -93,8 +91,10 @@ fun DashBoardScreen(onNavigate: () -> Unit, viewModel: ProductViewModel) {
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         sheetContent = {
-            DetailProduct(product = productSelected, onClick = {
-                viewModel.addProduct(it)
+            DetailProduct(product = productSelected, onClick = { product ->
+                viewModel.validateStock(product = product, inStock = {
+                    if (it) viewModel.updateProduct(product.apply { itemAdded.value += 1 })
+                })
             },
                 onClose = {
                     scope.launch { bottomSheetState.hide() }
@@ -274,7 +274,7 @@ fun ItemCardProduct(product: ProductModel, onClick: (selectedProduct: ProductMod
                             .padding(horizontal = normal, vertical = medium)
                             .align(Alignment.End),
                         style = MaterialTheme.typography.subtitle2.copy(
-                            color = Color.Black,
+                            color = if ((product.stock - product.itemAdded.value) != 0) Color.Black else Color.Red,
                             fontWeight = FontWeight.SemiBold
                         )
                     )
@@ -290,11 +290,11 @@ fun DetailProduct(
     onClick: (selectedProduct: ProductModel) -> Unit,
     onClose: () -> Unit
 ) {
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(medium),
+            .padding(medium)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.Start
     ) {
         IconButton(
@@ -357,7 +357,7 @@ fun DetailProduct(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.caption.copy(
-                    color = Color.Black,
+                    color = if ((product.stock - product.itemAdded.value) != 0) Color.Black else Color.Red,
                     fontWeight = FontWeight.SemiBold
                 )
             )
