@@ -17,7 +17,7 @@ fun FieldNavHost(
     ) {
         splashGraph(navController = navController)
         cartGraph(navController = navController, onBack = {
-            navController.popBackStack(ShoppingDestination.route, false)
+            navController.popBackStack()
         })
         shoppingGraph(navController = navController, onBack = {
             navController.popBackStack(DashBoardDestination.route, false)

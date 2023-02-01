@@ -37,5 +37,11 @@ fun ProductEntity.toProductModel() = ProductModel(
 )
 
 fun ProductPayModel.toProductPayRequest() = ProductPayRequest(
-    code = code
+    code = code,
+    quantity = quantity
+)
+
+fun ProductModel.toProductPayModel() = ProductPayModel(
+    code = code,
+    quantity = itemAdded.value
 )

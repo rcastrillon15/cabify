@@ -15,11 +15,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
@@ -32,14 +29,12 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,12 +46,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,9 +60,9 @@ import com.cabify.R
 import com.cabify.common.LoadState
 import com.cabify.common.toEuro
 import com.cabify.components.BackArrow
-import com.cabify.components.CreditCard
-import com.cabify.components.LinearProgressBarCustom
+import com.cabify.components.ContentBottomSheet
 import com.cabify.components.LoadErrorScreen
+import com.cabify.components.RatingBar
 import com.cabify.domain.models.ProductModel
 import com.cabify.ui.theme.Gray_FFF8F8F8
 import com.cabify.ui.theme.Purple700
@@ -81,7 +75,7 @@ import com.cabify.ui.theme.xxlarge
 import com.cabify.viewmodel.ProductViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+@ExperimentalMaterialApi
 @Composable
 fun CartScreen(
     onNavigate: () -> Unit,
@@ -89,128 +83,34 @@ fun CartScreen(
     viewModel: ProductViewModel
 ) {
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
     val productState by viewModel.productState.collectAsState()
-    val productPayState by viewModel.productPayState.collectAsState()
     val bottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 
-    var cardNumber by remember { mutableStateOf("8547 9658 6325 4521") }
-    var cardHolder by remember { mutableStateOf("RODRIGO CASTRILLON") }
-    var cardExpiration by remember { mutableStateOf("02/25") }
-    var cardCVV by remember { mutableStateOf("123") }
+    var showError by remember { mutableStateOf(false) }
+    var showLoading by remember { mutableStateOf(false) }
 
     BackHandler(bottomSheetState.isVisible) {
         scope.launch {
             bottomSheetState.hide()
+            focusManager.clearFocus()
+            onBack()
         }
     }
 
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         sheetContent = {
-            Column(
-                modifier = Modifier
-                    .padding(medium)
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-            ) {
-
-                IconButton(
-                    onClick = { scope.launch { bottomSheetState.hide() } },
-                    modifier = Modifier.padding(vertical = xsmall, horizontal = small)
-                ) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = Purple700
-                    )
-                }
-
-                CreditCard(
-                    cardNumber = cardNumber,
-                    cardHolder = cardHolder,
-                    cardExpiration = cardExpiration
-                )
-
-                TextField(
-                    value = cardNumber,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    onValueChange = {
-                        if (it.length <= 19) cardNumber = it
-                    },
-                    label = { Text("Card number") },
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White
-                    )
-                )
-
-                TextField(
-                    value = cardHolder.uppercase(),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    onValueChange = {
-                        if (it.length <= 25) cardHolder = it
-                    },
-                    label = { Text("Card holder") },
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White
-                    ),
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters)
-                )
-
-                TextField(
-                    value = cardExpiration,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    onValueChange = {
-                        if (it.length <= 5) cardExpiration = it
-                    },
-                    label = { Text("Card expiration") },
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White
-                    )
-                )
-
-                TextField(
-                    value = cardCVV,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    onValueChange = {
-                        if (it.length <= 3) cardCVV = it
-                    },
-                    label = { Text("Card cvv") },
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White
-                    )
-                )
-
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = medium),
-                    onClick = viewModel::checkout,
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Purple700),
-                    shape = RoundedCornerShape(28.dp)
-                ) {
-
-                    Text(
-                        text = stringResource(
-                            id = R.string.total_with_discount,
-                            viewModel.totalToPay.value.toEuro()
-                        ),
-                        style = MaterialTheme.typography.subtitle2.copy(
-                            textAlign = TextAlign.Center,
-                            color = Color.White,
-                            fontWeight = FontWeight.ExtraBold
-                        ),
-                        modifier = Modifier.padding(vertical = normal)
-                    )
-                }
-            }
+            ContentBottomSheet(
+                totalToPay = viewModel.totalToPay.value.toEuro(),
+                showLoading = showLoading,
+                checkout = {
+                    viewModel.checkout()
+                },
+                clearFocus = { focusManager.clearFocus() },
+                hideBottomSheet = { scope.launch { bottomSheetState.hide() } }
+            )
         }) {
 
         Scaffold(
@@ -219,7 +119,7 @@ fun CartScreen(
                     backgroundColor = Color.White,
                     contentColor = Purple700,
                     title = { Text(stringResource(R.string.shopping_cart)) },
-                    navigationIcon = { BackArrow(onBack) },
+                    navigationIcon = { BackArrow(onBack = { onBack() }) }
                 )
             },
             floatingActionButton = {
@@ -245,7 +145,7 @@ fun CartScreen(
                         Text(
                             text = stringResource(
                                 id = R.string.total_without_discount,
-                                viewModel.totalToPay.value.toEuro()
+                                viewModel.totalWithoutDiscount.value.toEuro()
                             ),
                             style = MaterialTheme.typography.caption.copy(
                                 textAlign = TextAlign.Center,
@@ -254,10 +154,9 @@ fun CartScreen(
                                 textDecoration = TextDecoration.LineThrough
                             )
                         )
-
                         Text(
                             text = stringResource(
-                                id = R.string.total_with_discount,
+                                id = R.string.go_to_pay,
                                 viewModel.totalToPay.value.toEuro()
                             ),
                             style = MaterialTheme.typography.subtitle2.copy(
@@ -284,9 +183,12 @@ fun CartScreen(
                                 ItemAddedProduct(
                                     product = product,
                                     onAdd = {
-                                        viewModel.addProduct(it)
-                                    }, onDelete = {
-                                        viewModel.deleteProduct(it)
+                                        viewModel.validateStock(product = product, inStock = {
+                                            if (it) viewModel.updateProduct(product.apply { itemAdded.value += 1 })
+                                        })
+                                    },
+                                    onDelete = {
+                                        viewModel.subtractPrice(product.apply { itemAdded.value -= 1 })
                                     })
                             }
                         }
@@ -323,7 +225,10 @@ fun CartScreen(
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center
                             ),
-                            onClick = { onBack() }
+                            onClick = {
+                                viewModel.cleanCart()
+                                onBack()
+                            }
                         )
                     }
                 }
@@ -334,19 +239,28 @@ fun CartScreen(
                     .show()
                 viewModel.showMessage.value = false
             }
+        }
+    }
 
-            when (productPayState) {
-                is LoadState.Failure -> LoadErrorScreen(viewModel.stateErrorMessage)
-                is LoadState.IsLoading -> LinearProgressBarCustom()
+    LaunchedEffect(Unit) {
+        viewModel.productPayState.collect { saveState ->
+            when (saveState) {
                 is LoadState.Success -> {
-
-                    //onNavigate()
+                    scope.launch { bottomSheetState.hide() }
+                    onNavigate()
                 }
-                else -> {
-
+                is LoadState.Error -> {
+                    showError = true
+                }
+                is LoadState.Loading -> {
+                    showLoading = true
                 }
             }
         }
+    }
+
+    if (showError) {
+        LoadErrorScreen(viewModel.stateErrorMessage)
     }
 }
 
@@ -424,7 +338,7 @@ fun ItemAddedProduct(
                             .padding(start = normal, top = medium, end = normal)
                             .align(Alignment.End),
                         style = MaterialTheme.typography.subtitle2.copy(
-                            color = Color.Black,
+                            color = if ((product.stock - product.itemAdded.value) != 0) Color.Black else Color.Red,
                             fontWeight = FontWeight.SemiBold
                         )
                     )
@@ -482,12 +396,8 @@ fun ItemAddedProduct(
                     }
                 }
 
-                Text(
-                    text = stringResource(id = R.string.discount, "4500€"),
-                    style = MaterialTheme.typography.caption.copy(
-                        color = Purple700,
-                        fontWeight = FontWeight.Bold
-                    ),
+                RatingBar(
+                    rating = product.ratingBar,
                     modifier = Modifier.padding(horizontal = normal)
                 )
             }

@@ -72,7 +72,7 @@ import com.cabify.ui.theme.xsmall
 import com.cabify.viewmodel.ProductViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+@ExperimentalMaterialApi
 @Composable
 fun DashBoardScreen(onNavigate: () -> Unit, viewModel: ProductViewModel) {
 
@@ -91,8 +91,10 @@ fun DashBoardScreen(onNavigate: () -> Unit, viewModel: ProductViewModel) {
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         sheetContent = {
-            DetailProduct(product = productSelected, onClick = {
-                viewModel.addProduct(it)
+            DetailProduct(product = productSelected, onClick = { product ->
+                viewModel.validateStock(product = product, inStock = {
+                    if (it) viewModel.updateProduct(product.apply { itemAdded.value += 1 })
+                })
             },
                 onClose = {
                     scope.launch { bottomSheetState.hide() }
@@ -272,7 +274,7 @@ fun ItemCardProduct(product: ProductModel, onClick: (selectedProduct: ProductMod
                             .padding(horizontal = normal, vertical = medium)
                             .align(Alignment.End),
                         style = MaterialTheme.typography.subtitle2.copy(
-                            color = Color.Black,
+                            color = if ((product.stock - product.itemAdded.value) != 0) Color.Black else Color.Red,
                             fontWeight = FontWeight.SemiBold
                         )
                     )
@@ -288,7 +290,6 @@ fun DetailProduct(
     onClick: (selectedProduct: ProductModel) -> Unit,
     onClose: () -> Unit
 ) {
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -356,7 +357,7 @@ fun DetailProduct(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.caption.copy(
-                    color = Color.Black,
+                    color = if ((product.stock - product.itemAdded.value) != 0) Color.Black else Color.Red,
                     fontWeight = FontWeight.SemiBold
                 )
             )
